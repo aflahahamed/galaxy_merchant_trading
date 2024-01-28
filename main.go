@@ -20,9 +20,17 @@ func main() {
 	for _, line := range lines {
 		if len(line) != 0 {
 			if !strings.Contains(line, "?") {
-				keys.Parsedict(line)
+				_, err := keys.Parsedict(line)
+				if err != nil {
+					fmt.Println("Error during parsing")
+				}
 			} else {
-				keys.Questionparser(line)
+				result, err := keys.AnswerPrinter(line)
+				if err != nil {
+					fmt.Println(err.Error())
+					continue
+				}
+				fmt.Println(result)
 			}
 		}
 

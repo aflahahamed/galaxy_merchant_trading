@@ -2,69 +2,88 @@ package internal
 
 import (
 	"fmt"
+	"math"
 	"strings"
 )
 
-func (gk *GalaxyKeys) Questionparser(line string) {
+var (
+	result string
+)
+
+func (gk *GalaxyKeys) AnswerPrinter(line string) (string, error) {
 	if strings.Contains(line, "how much is") {
 		cleanedText := strings.ReplaceAll(line, "how much is ", "")
 		cleanedText = strings.ReplaceAll(cleanedText, " ?", "")
-		keyss := strings.Split(cleanedText, " ")
+		cleanedTextSplit := strings.Split(cleanedText, " ")
 
-		for i := 0; i < len(keyss); i++ {
-			keyss[i] = gk.materialToRoman[keyss[i]]
+		for i := 0; i < len(cleanedTextSplit); i++ {
+			cleanedTextSplit[i] = gk.materialToRoman[cleanedTextSplit[i]]
 		}
-		romanString := strings.Join(keyss, "")
+		romanString := strings.Join(cleanedTextSplit, "")
 		answer, err := ConvertRomanToInt(romanString)
+
 		if err != nil {
-			fmt.Println(err.Error())
+			return "", fmt.Errorf("requested number is in invalid format")
 		}
 
-		fmt.Println(cleanedText, "is", answer)
+		result = fmt.Sprintf("%s is %d", cleanedText, answer)
+		return result, nil
+
 	} else if strings.Contains(line, "how many Credits is ") {
 		cleanedText := strings.ReplaceAll(line, "how many Credits is ", "")
 		cleanedText = strings.ReplaceAll(cleanedText, " ?", "")
+		cleanedTextSplit := strings.Split(cleanedText, " ")
 
-		keyss := strings.Split(cleanedText, " ")
-		for i := 0; i < len(keyss)-1; i++ {
-			keyss[i] = gk.materialToRoman[keyss[i]]
+		for i := 0; i < len(cleanedTextSplit)-1; i++ {
+			cleanedTextSplit[i] = gk.materialToRoman[cleanedTextSplit[i]]
 		}
-		metalValueString := keyss[len(keyss)-1]
-		romanString := strings.Join(keyss[:len(keyss)-1], "")
+
+		metalValueString := cleanedTextSplit[len(cleanedTextSplit)-1]
+		romanString := strings.Join(cleanedTextSplit[:len(cleanedTextSplit)-1], "")
 		answer, err := ConvertRomanToInt(romanString)
+
 		if err != nil {
-			fmt.Println(err)
-			return
+			return "", err
 		}
 
 		resultValue := float64(answer) * gk.metalValue[metalValueString]
-		fmt.Printf("%s is %.1f credits\n", cleanedText, resultValue)
+
+		if resultValue == math.Floor(resultValue) {
+			result = fmt.Sprintf("%s is %d credits", cleanedText, int(resultValue))
+
+		} else {
+			result = fmt.Sprintf("%s is %.1f credits", cleanedText, resultValue)
+
+		}
+
+		return result, nil
 
 	} else if strings.Contains(line, " has more Credits than ") {
 		cleanedText := strings.Replace(line, " has more Credits than ", "-", 1)
 		cleanedText = strings.ReplaceAll(cleanedText, "Does ", "")
 		cleanedText = strings.ReplaceAll(cleanedText, " ?", "")
 		comparators := strings.Split(cleanedText, "-")
-
 		a, err := gk.TextToValueWithMetal(comparators[0])
+
 		if err != nil {
-			fmt.Println(err)
-			return
+			return "", fmt.Errorf("requested number is in invalid format")
 		}
 		b, err := gk.TextToValueWithMetal(comparators[1])
+
 		if err != nil {
-			fmt.Println(err)
-			return
+			return "", fmt.Errorf("requested number is in invalid format")
 		}
 
 		if a < b {
-			fmt.Printf("%s has less credit than %s\n", comparators[0], comparators[1])
+			result = fmt.Sprintf("%s has less credit than %s", comparators[0], comparators[1])
 
 		} else {
-			fmt.Printf("%s has more credit than %s\n", comparators[0], comparators[1])
+			result = fmt.Sprintf("%s has more credit than %s", comparators[0], comparators[1])
 
 		}
-		return
+
+		return result, nil
+
 	} else if strings.Contains(line, " has less Credits than ") {
 		cleanedText := strings.Replace(line, " has less Credits than ", "-", 1)
 		cleanedText = strings.ReplaceAll(cleanedText, "Does ", "")
@@ -73,89 +92,96 @@ func (gk *GalaxyKeys) Questionparser(line string) {
 
 		a, err := gk.TextToValueWithMetal(comparators[0])
 		if err != nil {
-			fmt.Println(err)
-			return
+			return "", fmt.Errorf("requested number is in invalid format")
 		}
+
 		b, err := gk.TextToValueWithMetal(comparators[1])
 		if err != nil {
-			fmt.Println(err)
-			return
+			return "", fmt.Errorf("requested number is in invalid format")
 		}
 
 		if a < b {
-			fmt.Printf("%s has less Credits than %s\n", comparators[0], comparators[1])
+			result = fmt.Sprintf("%s has less Credits than %s", comparators[0], comparators[1])
 
 		} else {
-			fmt.Printf("%s has more Credits than %s\n", comparators[0], comparators[1])
+			result = fmt.Sprintf("%s has more Credits than %s", comparators[0], comparators[1])
 
 		}
-		return
+
+		return result, nil
+
 	} else if strings.Contains(line, " larger than ") {
 		cleanedText := strings.Replace(line, " larger than ", "-", 1)
 		cleanedText = strings.ReplaceAll(cleanedText, "Is ", "")
 		cleanedText = strings.ReplaceAll(cleanedText, "?", "")
 		comparators := strings.Split(cleanedText, "-")
-
 		leftSide := strings.Split(comparators[0], " ")
+
 		a, err := gk.TextToValue(leftSide)
 		if err != nil {
-			fmt.Println(err)
-			return
+			return "", fmt.Errorf("requested number is in invalid format")
 		}
 
 		rightSide := strings.Split(comparators[1], " ")
 		b, err := gk.TextToValue(rightSide)
 		if err != nil {
-			fmt.Println(err)
-			return
+			return "", fmt.Errorf("requested number is in invalid format")
 		}
 
 		if a < b {
-			fmt.Printf("%s is smaller than %s\n", comparators[0], comparators[1])
+			result = fmt.Sprintf("%s is smaller than %s", comparators[0], comparators[1])
+
 		} else {
-			fmt.Printf("%s is larger than %s\n", comparators[0], comparators[1])
+			result = fmt.Sprintf("%s is larger than %s", comparators[0], comparators[1])
 		}
-		return
+
+		return result, nil
+
 	} else if strings.Contains(line, " smaller than ") {
 		cleanedText := strings.Replace(line, " smaller than ", "-", 1)
 		cleanedText = strings.ReplaceAll(cleanedText, "Is ", "")
 		cleanedText = strings.ReplaceAll(cleanedText, "?", "")
 		comparators := strings.Split(cleanedText, "-")
-
 		leftSide := strings.Split(comparators[0], " ")
+
 		a, err := gk.TextToValue(leftSide)
 		if err != nil {
-			fmt.Println(err)
-			return
+			return "", fmt.Errorf("requested number is in invalid format")
 		}
 
 		rightSide := strings.Split(comparators[1], " ")
 		b, err := gk.TextToValue(rightSide)
 		if err != nil {
-			fmt.Println(err)
-			return
+			return "", fmt.Errorf("requested number is in invalid format")
 		}
 
 		if a < b {
-			fmt.Printf("%s is smaller than %s\n", comparators[0], comparators[1])
+			result = fmt.Sprintf("%s is smaller than %s", comparators[0], comparators[1])
+
 		} else {
-			fmt.Printf("%s is larger than %s\n", comparators[0], comparators[1])
+			result = fmt.Sprintf("%s is larger than %s", comparators[0], comparators[1])
 		}
-		return
+		return result, nil
+
 	} else {
-		fmt.Printf("I have no idea what you are talking about\n")
+
+		return "", fmt.Errorf("i have no idea what you are talking about")
+
 	}
 
 }
 
 func (gk *GalaxyKeys) TextToValueWithMetal(text string) (float64, error) {
 
-	keyss := strings.Split(text, " ")
-	for i := 0; i < len(keyss)-1; i++ {
-		keyss[i] = gk.materialToRoman[keyss[i]]
+	cleanedTextSplit := strings.Split(text, " ")
+
+	for i := 0; i < len(cleanedTextSplit)-1; i++ {
+		cleanedTextSplit[i] = gk.materialToRoman[cleanedTextSplit[i]]
 	}
-	metalValueString := keyss[len(keyss)-1]
-	romanString := strings.Join(keyss[:len(keyss)-1], "")
+
+	metalValueString := cleanedTextSplit[len(cleanedTextSplit)-1]
+	romanString := strings.Join(cleanedTextSplit[:len(cleanedTextSplit)-1], "")
+
 	answer, err := ConvertRomanToInt(romanString)
 	if err != nil {
 		fmt.Println(err)
@@ -172,10 +198,13 @@ func (gk *GalaxyKeys) TextToValue(text []string) (int, error) {
 	for i := 0; i < len(text); i++ {
 		text[i] = gk.materialToRoman[text[i]]
 	}
+
 	romanString := strings.Join(text, "")
 	answer, err := ConvertRomanToInt(romanString)
+
 	if err != nil {
 		fmt.Println(err.Error())
+
 		return 0, err
 	}
 

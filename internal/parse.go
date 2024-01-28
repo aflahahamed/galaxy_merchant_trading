@@ -13,12 +13,6 @@ type GalaxyKeys struct {
 	materialToRoman     map[string]string
 }
 
-type MyError struct{}
-
-func (m *MyError) Error() string {
-	return "boom"
-}
-
 func DefineGalaxyKeys() *GalaxyKeys {
 	return &GalaxyKeys{
 		transactionToNumber: make(map[string]int),
@@ -27,7 +21,7 @@ func DefineGalaxyKeys() *GalaxyKeys {
 	}
 }
 
-func (gk *GalaxyKeys) Parsedict(line string) {
+func (gk *GalaxyKeys) Parsedict(line string) (result string, err error) {
 	if !strings.Contains(line, "Credits") {
 		parts := strings.Split(line, " is ")
 		key := parts[0]
@@ -35,46 +29,49 @@ func (gk *GalaxyKeys) Parsedict(line string) {
 		gk.materialToRoman[key] = value
 		transactionNumber, err := ConvertRomanToInt(value)
 		if err != nil {
-			fmt.Errorf(err.Error())
+			return "", err
 		}
 
 		gk.transactionToNumber[key] = transactionNumber
+
+		return "success", nil
 
 	} else {
 		parts := strings.Split(line, " is ")
 		key := parts[0]
 		value := parts[1]
-		keyss := strings.Split(key, " ")
-		romanStringList := keyss[:len(keyss)-1]
+		keys := strings.Split(key, " ")
+		romanStringList := keys[:len(keys)-1]
 		for i := 0; i < len(romanStringList); i++ {
 			romanStringList[i] = gk.materialToRoman[romanStringList[i]]
 		}
-		metalName := keyss[len(keyss)-1]
+		metalName := keys[len(keys)-1]
 
 		romanString := strings.Join(romanStringList, "")
 
 		re := regexp.MustCompile(`\d+`)
 		values, err := strconv.Atoi(re.FindAllString(value, -1)[0])
 		if err != nil {
-			fmt.Errorf(err.Error())
+			return "", err
 		}
 
 		denominator, err := ConvertRomanToInt(romanString)
 		if err != nil {
-			fmt.Errorf(err.Error())
-
+			return "", err
 		}
 
 		gk.metalValue[metalName] = float64(values) / float64(denominator)
+		return "success", nil
 
 	}
+
 }
 
 // ConvertRomanToInt converts a Roman numeral to an integer
 // (implementation not provided, you need to implement this)
 func ConvertRomanToInt(romanString string) (int, error) {
 	if hasMoreThanThreeConsecutiveRepeats(romanString) {
-		return 0, fmt.Errorf("Requested number is in invalid format error")
+		return 0, fmt.Errorf("requested number is in invalid format")
 	}
 	roman := map[string]int{"I": 1, "V": 5, "X": 10, "L": 50, "C": 100, "D": 500, "M": 1000}
 	result := 0
@@ -89,20 +86,6 @@ func ConvertRomanToInt(romanString string) (int, error) {
 	}
 
 	return result + roman[string(romanString[len(romanString)-1])], nil
-	// integer, err := rom.StringToInt(romanString)
-	// if err != nil {
-	// 	return 0, err
-	// }
-	// fmt.Println("lalalal", integer)
-
-	// return integer, nil
-}
-
-// ConvertStringToInt converts a string to an integer
-// (implementation not provided, you need to implement this)
-func ConvertStringToInt(str string) int {
-	// Your implementation here
-	return 0
 }
 
 func hasMoreThanThreeConsecutiveRepeats(text string) bool {
