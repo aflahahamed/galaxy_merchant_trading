@@ -41,4 +41,9 @@ The helper functions are placed in `utils` folder.
 
 The code uses structs to define the maps which are used to answer the questions.
 
-The go.mod go.sum are package manager which
+The go.mod go.sum are package manager which handle the dependencies.
+
+## Testing
+
+The test files contain test cases for respective files of parse.go and print.go.
+The test structure is typical go structure where the input and outputs of functions are defined. The expected output or expected erros are also defined which is used to asses the test cases.
