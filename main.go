@@ -1,7 +1,9 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
+	"log"
 	"os"
 	"strings"
 
@@ -9,15 +11,24 @@ import (
 )
 
 func main() {
+
+	arguments := os.Args[1:]
+
+	if len(arguments) != 1 {
+		log.Fatal("Expected one argument of the input text file")
+		os.Exit(1)
+	}
+
+	file, err := os.Open(arguments[0])
+	scanner := bufio.NewScanner(file)
+	if err != nil {
+		log.Fatal(err)
+	}
 	keys := internal.DefineGalaxyKeys()
 
-	content, err := os.ReadFile("input.txt") // the file is inside the local directory
-	if err != nil {
-		fmt.Println("Err")
-	}
-	lines := strings.Split(string(content), "\n")
-
-	for _, line := range lines {
+	for scanner.Scan() {
+		line := scanner.Text()
+		fmt.Println(line)
 		if len(line) != 0 {
 			if !strings.Contains(line, "?") {
 				_, err := keys.Parsedict(line)
@@ -33,7 +44,6 @@ func main() {
 				fmt.Println(result)
 			}
 		}
-
 	}
 
 }

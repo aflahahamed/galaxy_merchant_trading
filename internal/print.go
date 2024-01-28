@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"math"
 	"strings"
+
+	utils "github.com/aflahahamed/galaxy_merchant_trading/utils"
 )
 
 var (
@@ -20,7 +22,7 @@ func (gk *GalaxyKeys) AnswerPrinter(line string) (string, error) {
 			cleanedTextSplit[i] = gk.materialToRoman[cleanedTextSplit[i]]
 		}
 		romanString := strings.Join(cleanedTextSplit, "")
-		answer, err := ConvertRomanToInt(romanString)
+		answer, err := utils.ConvertRomanToInt(romanString)
 
 		if err != nil {
 			return "", fmt.Errorf("requested number is in invalid format")
@@ -40,7 +42,7 @@ func (gk *GalaxyKeys) AnswerPrinter(line string) (string, error) {
 
 		metalValueString := cleanedTextSplit[len(cleanedTextSplit)-1]
 		romanString := strings.Join(cleanedTextSplit[:len(cleanedTextSplit)-1], "")
-		answer, err := ConvertRomanToInt(romanString)
+		answer, err := utils.ConvertRomanToInt(romanString)
 
 		if err != nil {
 			return "", err
@@ -182,7 +184,7 @@ func (gk *GalaxyKeys) TextToValueWithMetal(text string) (float64, error) {
 	metalValueString := cleanedTextSplit[len(cleanedTextSplit)-1]
 	romanString := strings.Join(cleanedTextSplit[:len(cleanedTextSplit)-1], "")
 
-	answer, err := ConvertRomanToInt(romanString)
+	answer, err := utils.ConvertRomanToInt(romanString)
 	if err != nil {
 		fmt.Println(err)
 		return 0, err
@@ -200,7 +202,7 @@ func (gk *GalaxyKeys) TextToValue(text []string) (int, error) {
 	}
 
 	romanString := strings.Join(text, "")
-	answer, err := ConvertRomanToInt(romanString)
+	answer, err := utils.ConvertRomanToInt(romanString)
 
 	if err != nil {
 		fmt.Println(err.Error())
